@@ -1,29 +1,52 @@
 package main
 
 import (
+	"crypto/rsa"
+	"log"
 	"net/http"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/namsral/flag"
 )
 
 func main() {
 
-	e := echo.New()
+	var authDomain string
+	flag.StringVar(&authDomain, "auth-domain", "", "Authentication domain")
+	flag.Parse()
 
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(`pubkey`))
+	keys, err := GetKeys("https://" + authDomain + "/.well-known/jwks.json")
 	if err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal(err)
 	}
+
+	if len(keys.Keys) == 0 {
+		log.Fatal("No public key found")
+	}
+
+	var publicKeys []*rsa.PublicKey
+
+	for _, key := range keys.Keys {
+		cert := key.GetCertificate()
+		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+		if err != nil {
+			log.Fatal(err)
+		}
+		publicKeys = append(publicKeys, verifyKey)
+	}
+
+	e := echo.New()
 
 	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		Skipper: func(c echo.Context) bool {
 			return false
 		},
 		ContextKey:    "user",
-		SigningKey:    publicKey,
+		SigningKey:    publicKeys[0],
 		SigningMethod: "RS256",
+		AuthScheme:    "Bearer",
 		TokenLookup:   "header:" + echo.HeaderAuthorization,
 	}))
 

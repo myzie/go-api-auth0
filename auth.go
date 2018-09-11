@@ -50,6 +50,7 @@ func (keys JSONWebKeys) Find(keyID string) (JSONWebKey, bool) {
 
 // GetKeys retrieves public keys from a remote JWKS endpoint
 // "https://" + os.Getenv("AUTH0_DOMAIN") + "/.well-known/jwks.json"
+// https://auth0.com/docs/quickstart/backend/golang/01-authorization
 func GetKeys(url string) (JSONWebKeys, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -57,7 +58,7 @@ func GetKeys(url string) (JSONWebKeys, error) {
 		return JSONWebKeys{}, err
 	}
 
-	ctx, cancel := context.WithTimeout(req.Context(), 500*time.Millisecond)
+	ctx, cancel := context.WithTimeout(req.Context(), time.Second)
 	defer cancel()
 
 	req = req.WithContext(ctx)
