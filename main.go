@@ -2,13 +2,14 @@ package main
 
 import (
 	"crypto/rsa"
-	"log"
 	"net/http"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/namsral/flag"
+	"github.com/pavel-kiselyov/echo-logrusmiddleware"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -38,6 +39,14 @@ func main() {
 	}
 
 	e := echo.New()
+
+	e.HideBanner = true
+	e.HidePort = true
+	e.Logger = logrusmiddleware.Logger{Logger: log.StandardLogger()}
+
+	e.Pre(middleware.RemoveTrailingSlash())
+	e.Use(logrusmiddleware.Hook())
+	e.Use(middleware.Recover())
 
 	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		Skipper: func(c echo.Context) bool {
