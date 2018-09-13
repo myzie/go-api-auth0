@@ -9,7 +9,7 @@ let webAuth = new auth0.WebAuth({
   clientID: AUTH_CONFIG.clientId,
   redirectUri: AUTH_CONFIG.callbackUrl,
   responseType: 'token id_token',
-  scope: 'openid'
+  scope: 'openid profile email'
 })
 
 let auth = new Vue({
@@ -66,6 +66,7 @@ let auth = new Vue({
         localStorage.removeItem('expires_at')
         localStorage.removeItem('user')
         webAuth.authorize()
+        // this.$router.push({ name: 'home' })
       })
     },
     isAuthenticated() {

@@ -2,9 +2,11 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/components/Home'
 import Callback from '@/components/Callback'
-import Test from '@/components/Test'
+import Profile from '@/components/Profile'
 
 Vue.use(Router)
+
+// https://router.vuejs.org/guide/advanced/meta.html
 
 const router = new Router({
   mode: 'history',
@@ -15,14 +17,15 @@ const router = new Router({
       component: Home
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: Profile,
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/auth_callback',
       name: 'callback',
       component: Callback
-    },
-    {
-      path: '/test',
-      name: 'test',
-      component: Test
     },
     {
       path: '*',
@@ -33,20 +36,20 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
 
-  let isAuth = router.app.$auth.isAuthenticated()
+  let loggedIn = router.app.$auth.isAuthenticated()
 
-  // eslint-disable-next-line
-  console.log('isAuth', isAuth)
-
-  if (to.name == 'callback') {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    // this route requires auth, check if logged in
+    // if not, redirect to login page.
+    if (!loggedIn) {
+      router.app.$auth.login()
+    } else {
+      next()
+    }
+  } else {
     next()
-  } else if (to.name == 'test') {
-    next()
-  } else if (router.app.$auth.isAuthenticated()) {
-    next()
-  } else { // trigger auth0 login
-    router.app.$auth.login()
   }
+
 })
 
 export default router

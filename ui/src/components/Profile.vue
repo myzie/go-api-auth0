@@ -4,22 +4,18 @@
       <a class="navbar-brand" href="#">
         <img src="https://a.storyblok.com/f/39898/1024x1024/dea4e1b62d/vue-js_logo-svg.png" width="40" height="40">
       </a>
-      <div v-if="$auth.user">
+      <div>
         <img :src="$auth.user.picture" width="30" height="30">
         <span class="text-muted font-weight-light px-2">{{$auth.user.name}}</span>
         <button type="button" class="btn btn-outline-secondary btn-sm" @click="$auth.logout()">Logout</button>
       </div>
     </nav>
   
-    <div class="jumbotron" v-if="$auth.user">
+    <div class="jumbotron">
       <div class="container">
         <h1 class="display-4">Hello, {{$auth.user.name}}!</h1>
-        <pre>{{$auth.user}}</pre>
+        <div>{{$auth.user}}</div>
       </div>
-    </div>
-    <div v-else>
-      <h1>You are not logged in</h1>
-      <a href="/profile">Login</a>
     </div>
 
     <div class="container">
@@ -31,15 +27,10 @@
 import axios from 'axios'
 
 export default {
-  data () {
-    return {
-      stories: []
-    }
-  },
+  name: 'test',
   mounted() {
-  },
-  methods: {
-
+    // eslint-disable-next-line
+      console.log('test')
   }
 }
 </script>
