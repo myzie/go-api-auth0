@@ -41,7 +41,7 @@ func main() {
 	e := echo.New()
 
 	e.HideBanner = true
-	e.HidePort = true
+	e.HidePort = false
 	e.Logger = logrusmiddleware.Logger{Logger: log.StandardLogger()}
 
 	e.Pre(middleware.RemoveTrailingSlash())
