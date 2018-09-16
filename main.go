@@ -3,20 +3,23 @@ package main
 import (
 	"crypto/rsa"
 	"net/http"
+	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/namsral/flag"
-	"github.com/pavel-kiselyov/echo-logrusmiddleware"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 
-	var authDomain string
+	var authDomain, corsOrigins string
 	flag.StringVar(&authDomain, "auth-domain", "", "Authentication domain")
+	flag.StringVar(&corsOrigins, "cors-origins", "", "Origins to allow")
 	flag.Parse()
+
+	origins := strings.Split(corsOrigins, ",")
 
 	keys, err := GetKeys("https://" + authDomain + "/.well-known/jwks.json")
 	if err != nil {
@@ -41,12 +44,15 @@ func main() {
 	e := echo.New()
 
 	e.HideBanner = true
-	e.HidePort = false
-	e.Logger = logrusmiddleware.Logger{Logger: log.StandardLogger()}
+	e.HidePort = true
 
 	e.Pre(middleware.RemoveTrailingSlash())
-	e.Use(logrusmiddleware.Hook())
+	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: origins,
+		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+	}))
 
 	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		Skipper: func(c echo.Context) bool {
@@ -60,8 +66,9 @@ func main() {
 	}))
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+		return c.JSON(http.StatusOK, map[string]interface{}{"message": "hello"})
 	})
 
+	e.Logger.Info("CORS origins:", origins)
 	e.Logger.Fatal(e.Start(":8080"))
 }
