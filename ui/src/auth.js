@@ -1,4 +1,5 @@
 import auth0 from 'auth0-js'
+import axios from 'axios'
 import Vue from 'vue'
 import { AUTH_CONFIG } from './auth0-variables'
 
@@ -75,15 +76,11 @@ let auth = new Vue({
     handleAuthentication() {
       return new Promise((resolve, reject) => {  
         webAuth.parseHash((err, authResult) => {
-          // eslint-disable-next-line
-          console.log('webAuth hash', err, authResult)
           if (authResult && authResult.accessToken && authResult.idToken) {
             this.expiresAt = authResult.expiresIn
             this.accessToken = authResult.accessToken
             this.token = authResult.idToken
             this.user = authResult.idTokenPayload
-            // eslint-disable-next-line
-            console.log('GOOD!', this.expiresAt, this.accessToken, this.token, this.user)
             resolve()
           } else if (err) {
             this.logout()
@@ -91,9 +88,16 @@ let auth = new Vue({
           }
         })
       })
+    },
+    setAxiosHeader() {
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.token
     }
   }
 })
+
+if (auth.token) {
+  auth.setAxiosHeader()
+}
 
 export default {
   install: function(Vue) {

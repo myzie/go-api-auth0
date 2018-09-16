@@ -7,7 +7,9 @@ Vue.use(auth)
 
 Vue.config.productionTip = false
 
-new Vue({
+let inst = new Vue({
   render: h => h(App),
   router,
 }).$mount('#app')
+
+inst.$auth.setAxiosHeader()

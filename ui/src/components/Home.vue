@@ -15,11 +15,14 @@
       <div class="container">
         <h1 class="display-4">Hello, {{$auth.user.name}}!</h1>
         <pre>{{$auth.user}}</pre>
+        <pre>{{message}}</pre>
       </div>
     </div>
-    <div v-else>
-      <h1>You are not logged in</h1>
-      <a href="/profile">Login</a>
+    <div v-else class="jumbotron">
+      <div class="container">
+        <h1>You are not logged in</h1>
+        <a href="/profile">Login</a>
+      </div>
     </div>
 
     <div class="container">
@@ -33,13 +36,14 @@ import axios from 'axios'
 export default {
   data () {
     return {
-      stories: []
+      message: null
     }
   },
   mounted() {
-  },
-  methods: {
-
+    axios.get('http://localhost:8080/')
+      .then(resp => {
+        this.message = resp.data
+      })
   }
 }
 </script>
